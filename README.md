@@ -9,7 +9,7 @@ Interactive dashboard + analysis of **which Schema.org structured-data types the
 [Google publishes](https://schema.org/docs/usage_stats.html) periodic statistics on Schema.org adoption across its crawl of the web. This repo:
 
 - fetches the latest dataset (period `2026_05`),
-- reshapes it into tidy CSV + chart-ready JSON,
+- reshapes it into tidy CSV + chart-ready JSON inlined into the dashboard,
 - renders a standalone, dependency-light dashboard (`index.html`) with **light/dark mode**,
 - includes an **interactive SEO priority guide** — sortable, filterable table of which schema types to implement, their real-world adoption tier, best use case, and whether Google has a rich result for them.
 
@@ -50,19 +50,18 @@ Two `Class` values:
 ```
 schema-usage-stats/
 ├── index.html              # standalone dashboard (data inlined, no build step)
-├── src/process.py          # fetch + reshape -> dist/
+├── src/process.py          # fetch + reshape the data
 ├── data/                   # raw files from schema.org's GitHub
 │   ├── 2026_05.csv
 │   └── summary_2026_05.json
-├── dist/                   # generated
-│   ├── processed.csv       # tidy: class, term, url, bucket
-│   └── chart_data.json     # what the dashboard consumes
 ├── netlify.toml
 ├── LICENSE
 └── README.md
 ```
 
 ## Regenerate
+
+`process.py` writes its output to a local `dist/` folder (gitignored — not part of the repo). The dashboard ships with this data already inlined, so you only need this to refresh for a new period.
 
 ```bash
 # fetch latest from schema.org's repo + reprocess
@@ -91,6 +90,18 @@ It's a single static file with data inlined, so any static server works:
 ```bash
 python3 -m http.server 4780   # then open http://localhost:4780
 ```
+
+## Deploy to Netlify
+
+No build step — it's a single static `index.html` with data inlined. `netlify.toml` is already configured.
+
+**Option A — connect this repo:** in Netlify, *Add new site → Import from Git*, pick this repo.
+- Build command: *(leave blank)*
+- Publish directory: `.`
+
+**Option B — drag & drop:** drop the project folder onto the Netlify dashboard.
+
+Charts load Chart.js from a CDN at view time, so the deployed site needs no bundling. (Want fully offline? Download `chart.umd.min.js` locally and point the `<script>` tag at it.)
 
 ## Updating to a new period
 
