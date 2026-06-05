@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Schema.org Usage on the Web — Google 2026_05</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<style>
+  /* ---- Theme tokens ---- */
+  html[data-theme="dark"]{
+    --bg:#0f1115; --card:#171a21; --chipbg:#1f2530; --ink:#e8eaed; --muted:#9aa0a6;
+    --line:#262b34; --shadow:none;
+  }
+  html[data-theme="light"]{
+    --bg:#f5f6f8; --card:#ffffff; --chipbg:#eef1f5; --ink:#1a1d23; --muted:#5f6571;
+    --line:#e2e5ea; --shadow:0 1px 3px rgba(0,0,0,.06);
+  }
+  /* Okabe-Ito color-blind-safe palette (same both themes) */
+  :root{ --c1:#0072B2; --c2:#E69F00; --c3:#009E73; --c4:#CC79A7; --c5:#0a84d6; --c6:#D55E00;
+    --must:#009E73; --high:#0072B2; --situ:#E69F00; --niche:#9aa0a6; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);transition:background .2s,color .2s;
+    font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  .wrap{max-width:1080px;margin:0 auto;padding:32px 20px 80px}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+  h1{font-size:1.9rem;margin:0 0 6px}
+  h2.sec{font-size:1.3rem;margin:40px 0 4px}
+  .sub{color:var(--muted);margin:0 0 8px}
+  .note{background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);
+    padding:12px 16px;color:var(--muted);font-size:.9rem;margin:18px 0 28px}
+  .grid{display:grid;gap:20px;grid-template-columns:1fr 1fr}
+  @media(max-width:760px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:var(--shadow)}
+  .card h3{font-size:1.05rem;margin:0 0 4px}
+  .card p{color:var(--muted);font-size:.85rem;margin:0 0 12px}
+  .chartbox{position:relative;height:300px}
+  .kpis{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 28px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);
+    padding:16px 20px;flex:1;min-width:150px}
+  .kpi .n{font-size:1.8rem;font-weight:700}
+  .kpi .l{color:var(--muted);font-size:.82rem}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{background:var(--chipbg);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:.84rem}
+  .chip.gold{border-color:var(--c2);color:var(--c2);font-weight:600}
+  details{margin-top:12px} summary{cursor:pointer;color:var(--muted);font-size:.85rem}
+  a{color:var(--c5)}
+  /* theme toggle */
+  .toggle{background:var(--card);border:1px solid var(--line);color:var(--ink);border-radius:999px;
+    padding:8px 14px;font-size:.85rem;cursor:pointer;white-space:nowrap}
+  .toggle:hover{border-color:var(--c5)}
+  /* ---- SEO priority guide ---- */
+  .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:14px 0 16px}
+  .filterbtn{background:var(--chipbg);border:1px solid var(--line);color:var(--ink);border-radius:999px;
+    padding:6px 14px;font-size:.85rem;cursor:pointer}
+  .filterbtn[aria-pressed="true"]{background:var(--c5);border-color:var(--c5);color:#fff}
+  .search{flex:1;min-width:180px;background:var(--card);border:1px solid var(--line);color:var(--ink);
+    border-radius:8px;padding:8px 12px;font-size:.9rem}
+  table{width:100%;border-collapse:collapse;font-size:.9rem}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--muted);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.03em;cursor:pointer;white-space:nowrap}
+  td code{background:var(--chipbg);padding:2px 7px;border-radius:6px;font-size:.88em}
+  .badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:.75rem;font-weight:700;color:#fff;white-space:nowrap}
+  .b-must{background:var(--must)} .b-high{background:var(--high)} .b-situ{background:var(--situ);color:#3a2c00} .b-niche{background:var(--niche)}
+  .tier{display:inline-flex;align-items:center;gap:8px}
+  .tierbar{width:64px;height:7px;border-radius:4px;background:var(--chipbg);overflow:hidden}
+  .tierbar i{display:block;height:100%;background:var(--c3)}
+  .rr{color:var(--c3);font-weight:600}
+  footer{margin-top:40px;color:var(--muted);font-size:.82rem;border-top:1px solid var(--line);padding-top:18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>Which Schema Types Does the Web Actually Use?</h1>
+      <p class="sub">Google's published Schema.org usage statistics — period <strong>2026-05</strong>. Built for SEOs.</p>
+    </div>
+    <button class="toggle" id="themeBtn" aria-label="Toggle light/dark theme"></button>
+  </div>
+  <div class="note">
+    <strong>How to read this:</strong> Google reports each term by a <em>domain-count bucket</em>
+    — how many distinct domains use it — not an exact number. A higher bucket = wider adoption.
+    Source: <a href="https://schema.org/docs/usage_stats.html" target="_blank" rel="noopener">schema.org/docs/usage_stats.html</a>.
+  </div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <!-- ============ SEO PRIORITY GUIDE ============ -->
+  <h2 class="sec">Schema priority guide for SEOs</h2>
+  <p class="sub">Which types to implement, why, and how widely the web already uses them. Priority blends real-world adoption with rich-result payoff. Click a column header to sort.</p>
+  <div class="controls">
+    <button class="filterbtn" data-f="all" aria-pressed="true">All</button>
+    <button class="filterbtn" data-f="must" aria-pressed="false">Must-have</button>
+    <button class="filterbtn" data-f="high" aria-pressed="false">High</button>
+    <button class="filterbtn" data-f="situational" aria-pressed="false">Situational</button>
+    <button class="filterbtn" data-f="niche" aria-pressed="false">Niche</button>
+    <input class="search" id="search" type="search" placeholder="Search type or use case…">
+  </div>
+  <div class="card" style="padding:6px 6px 2px">
+    <table id="guide">
+      <thead><tr>
+        <th data-k="type">Schema type</th>
+        <th data-k="prio">Priority</th>
+        <th data-k="rank">Web adoption</th>
+        <th data-k="use">Best for</th>
+        <th data-k="rr">Google rich result</th>
+      </tr></thead>
+      <tbody id="guideBody"></tbody>
+    </table>
+  </div>
+
+  <!-- ============ CHARTS ============ -->
+  <h2 class="sec">The data behind it</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Itemtypes — adoption pyramid</h3>
+      <p>How many of the 958 tracked types fall in each adoption tier.</p>
+      <div class="chartbox"><canvas id="itTier"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Properties — adoption pyramid</h3>
+      <p>4,587 tracked properties (predicates) by adoption tier.</p>
+      <div class="chartbox"><canvas id="prTier"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>The long tail</h3>
+      <p>Share of terms used on fewer than 1,000 domains vs. everything more popular.</p>
+      <div class="chartbox"><canvas id="tail"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Most-adopted types (10M+ domains)</h3>
+      <p>The 12 Itemtypes nearly every site touches.</p>
+      <div class="chips" id="it10m"></div>
+      <details><summary>Next tier — 1M–10M domains (35 types)</summary>
+        <div class="chips" id="it1m" style="margin-top:10px"></div></details>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:20px">
+    <h3>Most-adopted properties (10M+ domains)</h3>
+    <p>The 31 properties present across the broadest slice of the web.</p>
+    <div class="chips" id="pr10m"></div>
+    <details><summary>Next tier — 1M–10M domains (65 properties)</summary>
+      <div class="chips" id="pr1m" style="margin-top:10px"></div></details>
+  </div>
+
+  <footer>
+    Data: Schema.org / Google public usage statistics (2026-05), CC BY-SA 3.0.
+    Charts: Chart.js. Priority ratings are editorial guidance layered on adoption data. Built for SEO research.
+  </footer>
+</div>
+
+<script>
+const DATA = {
+  "period": "2026_05",
+  "buckets": [
+    "< 1K",
+    "1K - 10K",
+    "10K - 100K",
+    "100K - 1M",
+    "1M - 10M",
+    "10M+"
+  ],
+  "classes": {
+    "Itemtype": {
+      "counts_per_bucket": [
+        485,
+        236,
+        151,
+        39,
+        35,
+        12
+      ],
+      "total": 958,
+      "top_10M": [
+        "BreadcrumbList",
+        "EntryPoint",
+        "ImageObject",
+        "ListItem",
+        "Organization",
+        "Person",
+        "PropertyValueSpecification",
+        "ReadAction",
+        "SearchAction",
+        "Thing",
+        "WebPage",
+        "WebSite"
+      ],
+      "top_1M_10M": [
+        "AggregateOffer",
+        "AggregateRating",
+        "Answer",
+        "Article",
+        "Blog",
+        "BlogPosting",
+        "Brand",
+        "CollectionPage",
+        "CommentAction",
+        "ContactPoint",
+        "Country",
+        "CreativeWork",
+        "FAQPage",
+        "GeoCoordinates",
+        "ImageGallery",
+        "ItemList",
+        "ItemPage",
+        "LocalBusiness",
+        "Offer",
+        "OpeningHoursSpecification",
+        "Place",
+        "PostalAddress",
+        "Product",
+        "QuantitativeValue",
+        "Question",
+        "Rating",
+        "Review",
+        "Service",
+        "SiteNavigationElement",
+        "UnitPriceSpecification",
+        "VideoObject",
+        "WPFooter",
+        "WPHeader",
+        "WPSideBar",
+        "WebPageElement"
+      ],
+      "long_tail": 485
+    },
+    "Predicate": {
+      "counts_per_bucket": [
+        3779,
+        324,
+        269,
+        119,
+        65,
+        31
+      ],
+      "total": 4587,
+      "top_10M": [
+        "about",
+        "author",
+        "breadcrumb",
+        "caption",
+        "contentUrl",
+        "dateModified",
+        "datePublished",
+        "description",
+        "headline",
+        "height",
+        "image",
+        "inLanguage",
+        "isPartOf",
+        "item",
+        "itemListElement",
+        "logo",
+        "mainEntityOfPage",
+        "name",
+        "position",
+        "potentialAction",
+        "primaryImageOfPage",
+        "publisher",
+        "query-input",
+        "sameAs",
+        "target",
+        "thumbnailUrl",
+        "url",
+        "urlTemplate",
+        "valueName",
+        "valueRequired",
+        "width"
+      ],
+      "top_1M_10M": [
+        "acceptedAnswer",
+        "address",
+        "addressCountry",
+        "addressLocality",
+        "addressRegion",
+        "aggregateRating",
+        "alternateName",
+        "areaServed",
+        "articleBody",
+        "articleSection",
+        "availability",
+        "availableLanguage",
+        "bestRating",
+        "brand",
+        "category",
+        "closes",
+        "commentCount",
+        "contactPoint",
+        "contactType",
+        "creator",
+        "dayOfWeek",
+        "duration",
+        "email",
+        "embedUrl",
+        "geo",
+        "highPrice",
+        "itemCondition",
+        "keywords",
+        "latitude",
+        "legalName",
+        "location",
+        "longitude",
+        "lowPrice",
+        "mainContentOfPage",
+        "mainEntity",
+        "nextItem",
+        "offers",
+        "openingHours",
+        "openingHoursSpecification",
+        "opens",
+        "postalCode",
+        "previousItem",
+        "price",
+        "priceCurrency",
+        "priceRange",
+        "priceSpecification",
+        "priceValidUntil",
+        "ratingCount",
+        "ratingValue",
+        "review",
+        "reviewBody",
+        "reviewCount",
+        "reviewRating",
+        "seller",
+        "sku",
+        "streetAddress",
+        "telephone",
+        "text",
+        "uploadDate",
+        "validThrough",
+        "value",
+        "valueAddedTaxIncluded",
+        "wordCount",
+        "worksFor",
+        "worstRating"
+      ],
+      "long_tail": 3779
+    }
+  }
+};
+
+/* ---- SEO recommendations: tier from data, priority/use/richResult editorial ---- */
+const REC = [
+  ["WebSite","10M+","must","Sitewide baseline — enables Sitelinks Search Box via SearchAction.",true],
+  ["Organization","10M+","must","Entity/brand signals; feeds Knowledge Panel (logo, sameAs).",true],
+  ["BreadcrumbList","10M+","must","Breadcrumb trail in search results. Cheap, high value.",true],
+  ["WebPage","10M+","must","Page-level context; ties content to the site graph.",false],
+  ["ImageObject","10M+","must","Proper image metadata for content & logos.",false],
+  ["Person","10M+","must","Authors, profiles; supports E-E-A-T and author entities.",false],
+  ["Article","1M - 10M","high","News/editorial pages; Top Stories & rich article display.",true],
+  ["BlogPosting","1M - 10M","high","Blog posts — author, dates, headline for article results.",true],
+  ["Product","1M - 10M","high","Product pages — price, availability, ratings snippets.",true],
+  ["Offer","1M - 10M","high","Pricing/availability inside Product; drives merchant results.",true],
+  ["AggregateRating","1M - 10M","high","Star ratings in results; pairs with Product/Review.",true],
+  ["Review","1M - 10M","high","Individual reviews; review snippets.",true],
+  ["FAQPage","1M - 10M","high","FAQ rich results (now limited to gov/health) + AI extraction.",true],
+  ["LocalBusiness","1M - 10M","high","Local pack & business panel — NAP, hours, geo.",true],
+  ["VideoObject","1M - 10M","high","Video rich results, key moments, video thumbnails.",true],
+  ["Service","1M - 10M","high","Service businesses; describes offerings/areaServed.",false],
+  ["Brand","1M - 10M","high","Brand entity linking; strengthens Product/Org.",false],
+  ["ItemList","1M - 10M","high","Carousels & ranked lists in results.",true],
+  ["Question","1M - 10M","high","Q&A content; pairs with QAPage/FAQPage.",true],
+  ["Event","100K - 1M","situational","Event listings — dates, venue, tickets. Event rich results.",true],
+  ["JobPosting","100K - 1M","situational","Job boards/careers pages — Google Jobs experience.",true],
+  ["HowTo","100K - 1M","situational","Step-by-step guides (rich result deprecated; still aids AI).",false],
+  ["SoftwareApplication","100K - 1M","situational","App pages — ratings, price, OS.",true],
+  ["Restaurant","100K - 1M","situational","Restaurants — menu, hours, cuisine, reservations.",true],
+  ["SpeakableSpecification","100K - 1M","situational","Marks TTS-friendly passages for voice/assistant.",false],
+  ["Recipe","10K - 100K","situational","Recipe rich results — ingredients, time, ratings.",true],
+  ["Course","10K - 100K","situational","Course listings — provider, title; Course rich result.",true],
+  ["QAPage","10K - 100K","situational","Q&A/forum pages — Q&A rich result.",true],
+  ["Movie","10K - 100K","situational","Film pages — ratings, cast; Movie carousel.",true],
+  ["Book","10K - 100K","situational","Book pages — author, edition; Book actions.",true],
+  ["Dataset","10K - 100K","situational","Datasets — Google Dataset Search visibility.",true],
+  ["RealEstateListing","10K - 100K","situational","Property listings — price, location, specs.",false],
+  ["PodcastEpisode","10K - 100K","situational","Podcast episodes — feed/audio metadata.",false],
+  ["TVSeries","10K - 100K","situational","TV pages — seasons, cast; watch actions.",true],
+  ["MusicRecording","10K - 100K","situational","Music tracks — artist, album metadata.",false],
+  ["Vehicle","10K - 100K","situational","Auto listings — make, model, price specs.",false],
+  ["SpecialAnnouncement","1K - 10K","niche","Time-sensitive notices (emergencies, closures).",true],
+  ["MedicalEntity","1K - 10K","niche","Health/medical content — specialized typing.",false],
+];
+
+const TIER_ORDER = ["< 1K","1K - 10K","10K - 100K","100K - 1M","1M - 10M","10M+"];
+const PALETTE=['#0072B2','#E69F00','#009E73','#CC79A7','#0a84d6','#D55E00'];
+
+/* ---------- THEME ---------- */
+function gridColor(){ return getComputedStyle(document.documentElement).getPropertyValue('--line').trim(); }
+function tickColor(){ return getComputedStyle(document.documentElement).getPropertyValue('--muted').trim(); }
+let charts=[];
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  localStorage.setItem('theme',t);
+  document.getElementById('themeBtn').textContent = t==='dark' ? '☀ Light mode' : '🌙 Dark mode';
+  charts.forEach(c=>{ // recolor axes on theme switch
+    c.options.scales.x.ticks.color=tickColor();
+    c.options.scales.y.ticks.color=tickColor();
+    c.options.scales.y.grid.color=gridColor();
+    if(c.options.scales.y.title) c.options.scales.y.title.color=tickColor();
+    c.update();
+  });
+}
+(function initTheme(){
+  const saved=localStorage.getItem('theme');
+  const prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;
+  applyTheme(saved || (prefersDark?'dark':'light'));
+})();
+document.getElementById('themeBtn').onclick=()=>{
+  applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
+};
+
+/* ---------- CHARTS ---------- */
+function bar(id,counts){
+  const c=new Chart(document.getElementById(id),{
+    type:'bar',
+    data:{labels:DATA.buckets,datasets:[{data:counts,backgroundColor:PALETTE,borderRadius:6}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.parsed.y} terms`}}},
+      scales:{x:{ticks:{color:tickColor()},grid:{display:false}},
+        y:{ticks:{color:tickColor()},grid:{color:gridColor()},title:{display:true,text:'# of terms',color:tickColor()}}}}
+  }); charts.push(c); return c;
+}
+const it=DATA.classes.Itemtype, pr=DATA.classes.Predicate;
+bar('itTier',it.counts_per_bucket);
+bar('prTier',pr.counts_per_bucket);
+new Chart(document.getElementById('tail'),{
+  type:'doughnut',
+  data:{labels:['Itemtypes <1K','Itemtypes ≥1K','Properties <1K','Properties ≥1K'],
+    datasets:[{data:[it.long_tail,it.total-it.long_tail,pr.long_tail,pr.total-pr.long_tail],
+      backgroundColor:['#D55E00','#009E73','#CC79A7','#0072B2']}]},
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom',labels:{color:tickColor(),boxWidth:12}}}}
+});
+
+/* ---------- KPIs ---------- */
+const kpis=[['958','Itemtypes tracked'],['4,587','Properties tracked'],
+  ['12','Itemtypes on 10M+ domains'],
+  [(((it.long_tail+pr.long_tail)/(it.total+pr.total))*100).toFixed(0)+'%','of terms are long-tail (<1K)']];
+document.getElementById('kpis').innerHTML=kpis.map(k=>`<div class="kpi"><div class="n">${k[0]}</div><div class="l">${k[1]}</div></div>`).join('');
+
+/* ---------- CHIPS ---------- */
+const chips=(id,arr,gold)=>document.getElementById(id).innerHTML=arr.map(t=>`<span class="chip${gold?' gold':''}">${t}</span>`).join('');
+chips('it10m',it.top_10M,true); chips('it1m',it.top_1M_10M,false);
+chips('pr10m',pr.top_10M,true); chips('pr1m',pr.top_1M_10M,false);
+
+/* ---------- SEO PRIORITY GUIDE ---------- */
+const PRIO={must:['Must-have','b-must'],high:['High','b-high'],situational:['Situational','b-situ'],niche:['Niche','b-niche']};
+const PRIO_RANK={must:0,high:1,situational:2,niche:3};
+let filter='all', q='', sortK='prio', sortDir=1;
+
+function render(){
+  let rows=REC.filter(r=>(filter==='all'||r[2]===filter) &&
+    (q==='' || r[0].toLowerCase().includes(q) || r[3].toLowerCase().includes(q)));
+  rows.sort((a,b)=>{
+    let av,bv;
+    if(sortK==='type'){av=a[0].toLowerCase();bv=b[0].toLowerCase();}
+    else if(sortK==='prio'){av=PRIO_RANK[a[2]];bv=PRIO_RANK[b[2]];}
+    else if(sortK==='rank'){av=TIER_ORDER.indexOf(a[1]);bv=TIER_ORDER.indexOf(b[1]);}
+    else if(sortK==='rr'){av=a[4]?0:1;bv=b[4]?0:1;}
+    else {av=a[3].toLowerCase();bv=b[3].toLowerCase();}
+    return av<bv?-1*sortDir:av>bv?1*sortDir:0;
+  });
+  document.getElementById('guideBody').innerHTML=rows.map(r=>{
+    const [type,tier,prio,use,rr]=r;
+    const [plabel,pcls]=PRIO[prio];
+    const pct=Math.round((TIER_ORDER.indexOf(tier)+1)/TIER_ORDER.length*100);
+    return `<tr>
+      <td><code>${type}</code></td>
+      <td><span class="badge ${pcls}">${plabel}</span></td>
+      <td><span class="tier"><span class="tierbar"><i style="width:${pct}%"></i></span>${tier}</span></td>
+      <td>${use}</td>
+      <td>${rr?'<span class="rr">✓ Yes</span>':'<span style="color:var(--muted)">—</span>'}</td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="5" style="color:var(--muted);padding:20px">No types match.</td></tr>`;
+}
+document.querySelectorAll('.filterbtn').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.filterbtn').forEach(x=>x.setAttribute('aria-pressed','false'));
+  b.setAttribute('aria-pressed','true'); filter=b.dataset.f; render();
+});
+document.getElementById('search').oninput=e=>{q=e.target.value.toLowerCase().trim();render();};
+document.querySelectorAll('#guide th').forEach(th=>th.onclick=()=>{
+  const k=th.dataset.k; sortDir=(sortK===k)?-sortDir:1; sortK=k; render();
+});
+render();
+</script>
+</body>
+</html>
