@@ -360,7 +360,7 @@ const REC = [
   ["Service","1M - 10M","high","Service businesses; describes offerings/areaServed.",false],
   ["Brand","1M - 10M","high","Brand entity linking; strengthens Product/Org.",false],
   ["ItemList","1M - 10M","high","Carousels & ranked lists in results.",true],
-  ["Question","1M - 10M","high","Q&A content; pairs with QAPage (Q&A rich result still supported). Note: FAQPage's rich result was dropped May 2026.",true],
+  ["Question","1M - 10M","situational","Earns a rich result only inside QAPage (user-submitted Q&A). Its FAQPage use lost rich-result support (Google, May 2026); Answer markup stays valid but no SERP feature there.",true],
   ["Event","100K - 1M","situational","Event listings — dates, venue, tickets. Event rich results.",true],
   ["JobPosting","100K - 1M","situational","Job boards/careers pages — Google Jobs experience.",true],
   ["HowTo","100K - 1M","situational","Step-by-step guides (rich result deprecated; still aids AI).",false],
@@ -410,7 +410,10 @@ document.getElementById('themeBtn').onclick=()=>{
   applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
 };
 
-/* ---------- CHARTS ---------- */
+const it=DATA.classes.Itemtype, pr=DATA.classes.Predicate;
+
+/* ---------- CHARTS (Chart.js loaded from CDN; guard so a CDN failure
+   never blocks the rest of the dashboard from rendering) ---------- */
 function bar(id,counts){
   const c=new Chart(document.getElementById(id),{
     type:'bar',
@@ -421,17 +424,23 @@ function bar(id,counts){
         y:{ticks:{color:tickColor()},grid:{color:gridColor()},title:{display:true,text:'# of terms',color:tickColor()}}}}
   }); charts.push(c); return c;
 }
-const it=DATA.classes.Itemtype, pr=DATA.classes.Predicate;
-bar('itTier',it.counts_per_bucket);
-bar('prTier',pr.counts_per_bucket);
-new Chart(document.getElementById('tail'),{
-  type:'doughnut',
-  data:{labels:['Itemtypes <1K','Itemtypes ≥1K','Properties <1K','Properties ≥1K'],
-    datasets:[{data:[it.long_tail,it.total-it.long_tail,pr.long_tail,pr.total-pr.long_tail],
-      backgroundColor:['#D55E00','#009E73','#CC79A7','#0072B2']}]},
-  options:{responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{position:'bottom',labels:{color:tickColor(),boxWidth:12}}}}
-});
+function drawCharts(){
+  if(typeof Chart==='undefined'){
+    document.querySelectorAll('.chartbox').forEach(b=>
+      b.innerHTML='<p style="color:var(--muted);font-size:.85rem;text-align:center;padding-top:120px">Chart failed to load (offline?). Data tables above are unaffected.</p>');
+    return;
+  }
+  bar('itTier',it.counts_per_bucket);
+  bar('prTier',pr.counts_per_bucket);
+  new Chart(document.getElementById('tail'),{
+    type:'doughnut',
+    data:{labels:['Itemtypes <1K','Itemtypes ≥1K','Properties <1K','Properties ≥1K'],
+      datasets:[{data:[it.long_tail,it.total-it.long_tail,pr.long_tail,pr.total-pr.long_tail],
+        backgroundColor:['#D55E00','#009E73','#CC79A7','#0072B2']}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{color:tickColor(),boxWidth:12}}}}
+  });
+}
 
 /* ---------- KPIs ---------- */
 const kpis=[['958','Itemtypes tracked'],['4,587','Properties tracked'],
@@ -483,6 +492,7 @@ document.querySelectorAll('#guide th').forEach(th=>th.onclick=()=>{
   const k=th.dataset.k; sortDir=(sortK===k)?-sortDir:1; sortK=k; render();
 });
 render();
+drawCharts();
 </script>
 </body>
 </html>
